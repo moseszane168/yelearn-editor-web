@@ -319,9 +319,10 @@ export default {
 }
 
 .custom-dialog .el-input__inner {
-  background-color: #444444; /* 输入框背景颜色 */
+  //background-color: #444444; /* 输入框背景颜色 */
   //color: white; /* 输入框字体颜色为白色 */
-  border-color: #555555; /* 输入框边框颜色 */
+  //border-color: #555555; /* 输入框边框颜色 */
+  //width: 80%;
 }
 
 .custom-dialog .el-button--primary {

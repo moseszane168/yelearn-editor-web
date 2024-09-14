@@ -117,8 +117,7 @@ export default {
       },
       newCourse: {
         title: '',
-        description: '',
-        cover: ''
+        description: ''
       },
       fileList: [],
     };
@@ -194,7 +193,8 @@ export default {
       }).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
-          this.coursePack = res.data.result
+          this.coursePack = res.data.result;
+          this.newCoursePackage = res.data.result;
         }
       }).catch(() => {
         this.loading = false;
