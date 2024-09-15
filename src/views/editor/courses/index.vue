@@ -2,7 +2,7 @@
   <div class="container">
     <!-- 左边部分 -->
     <div class="left">
-      <img src="https://via.placeholder.com/50" alt="Left Image" class="left-image">
+      <img src="../../../assets/logo.png" alt="Left Image" class="left-image">
     </div>
 
     <!-- 右边部分 -->
@@ -11,7 +11,7 @@
       <div class="right-top">
         <!-- 右上部分的上 -->
         <div class="right-top-top">
-          <button @click="showCoursePackageList" class="course-package-button">课程包列表 ></button>
+          <span @click="showCoursePackageList" class="course-package-span">课程包列表 ></span>
           <span class="course-package-title">{{ coursePack.title }}</span>
         </div>
         <!-- 右上部分的下 -->
@@ -23,9 +23,12 @@
           </div>
           <!-- 右上部分的下右 -->
           <div class="right-top-bottom-right">
-            <button @click="showEditDialog" class="edit-button">玩起来</button>
+<!--            <button @click="PlayItUp" class="edit-button">下架</button>-->
+<!--            <button @click="PlayItUp" class="edit-button">更新</button>-->
+            <button @click="PlayItUp" class="edit-button">玩起来</button>
+<!--            <button @click="PlayItUp" class="edit-button">发布</button>-->
             <button @click="showEditDialog" class="edit-button">编辑</button>
-            <button @click="showCreateCourseDialog" class="create-course-button">创建课程</button>
+            <button @click="showCreateCourseDialog" class="edit-button">创建课程</button>
           </div>
         </div>
       </div>
@@ -34,11 +37,21 @@
       <div class="right-bottom">
         <div class="course-list" v-for="(course, index) in courseList" :key="index">
           <span class="course-title">{{ course.title }}</span>
-          <button @click="handleEdit(course.id)" class="edit-course-button">编辑</button>
-          <select @change="handleAction(course.id, $event)" class="action-select">
-            <option value="">操作</option>
-            <option value="delete">删除</option>
-          </select>
+          <!-- 编辑按钮 -->
+          <el-button class="edit-course-button" @click="handleEdit(course.id)">
+            <i class="el-icon-edit"></i> 编辑
+          </el-button>
+          <!-- 'V' 下拉框 -->
+          <el-dropdown @command="handleAction(course.id, $event)">
+            <el-button class="edit-course-button">
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu>
+              <el-dropdown-item command="delete" class="course-dropdown">
+                <i class="el-icon-delete"></i> 删除
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
       </div>
     </div>
@@ -204,6 +217,9 @@ export default {
       // 显示课程包列表的逻辑
       this.$router.push(`/course-packs`);
     },
+    PlayItUp(){
+      window.open('https://earthworm.cuixueshe.com', '_blank');
+    },
     showEditDialog() {
       this.showDialog = true;
     },
@@ -216,9 +232,10 @@ export default {
       console.log('编辑课程:', coursePackId,courseId);
       this.$router.push(`/course-packs/${coursePackId}/courses/${courseId}`);
     },
-    handleAction(courseId, event) {
-      const action = event.target.value;
-      if (action === 'delete') {
+    handleAction(courseId,command) {
+      console.log(courseId);
+      console.log(command);
+      if (command === 'delete') {
         this.deleteCourse(courseId);
       }
     },
@@ -321,13 +338,18 @@ export default {
 .right-top-bottom {
   display: flex;
   justify-content: space-between;
+  align-items: center; /* 垂直居中 */
 }
 
-.right-top-bottom-left, .right-top-bottom-right {
-  //display: flex;
+.right-top-bottom-left {
   display: inline-block;
   flex-direction: column;
   margin-right: 20px;
+}
+
+.right-top-bottom-right {
+  display: flex;
+  gap: 10px; /* 在按钮之间添加10px的间隔 */
 }
 
 .right-top-bottom-right {
@@ -336,10 +358,17 @@ export default {
 
 .course-package-button {
   margin-right: 10px;
+  background-color: #FFFFFF85;
+}
+
+.course-package-span {
+  margin-right: 10px;
+  color:#FFFFFF85;
 }
 
 .course-package-title {
   margin-right: 10px;
+  color:#FFFFFFD1;
 }
 
 .course-package-title-large {
@@ -357,7 +386,13 @@ export default {
 }
 
 .edit-button, .create-course-button {
-  margin-bottom: 10px;
+  //margin-bottom: 10px;
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 .right-bottom {
@@ -369,7 +404,8 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
-  background-color: #007bff;
+  //background-color: #6366f1;
+  background-color: #4CAF50;
   color: white;
   padding: 10px;
 }
@@ -380,6 +416,11 @@ export default {
 
 .edit-course-button, .action-select {
   margin-left: 10px;
+  background-color: #111827;
+}
+
+.course-dropdown {
+  //background-color: #111827;
 }
 
 .dialog {
