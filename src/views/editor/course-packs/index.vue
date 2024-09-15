@@ -20,11 +20,21 @@
               <p class="course-description">{{ coursePack.description }}</p>
             </div>
             <div class="actions">
-              <button class="edit-button" @click="goToEditPage(coursePack.id)">编辑</button>
-              <select class="dropdown" @change="handleDropdownChange(coursePack.id, $event)">
-                <option value="">操作</option>
-                <option value="delete">删除</option>
-              </select>
+              <!-- 编辑按钮 -->
+              <el-button class="edit-course-pack-button" @click="goToEditPage(coursePack.id)">
+                <i class="el-icon-edit"></i> 编辑
+              </el-button>
+              <!-- 'V' 下拉框 -->
+              <el-dropdown @command="handleDropdownChange(coursePack.id, $event)">
+                <el-button class="edit-course-pack-button">
+                  <i class="el-icon-arrow-down el-icon--right"></i>
+                </el-button>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="delete" class="course-dropdown">
+                    <i class="el-icon-delete"></i> 删除
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
             </div>
           </div>
         </div>
@@ -105,9 +115,10 @@ export default {
     goToEditPage(coursePackId) {
       this.$router.push(`/course-packs/${coursePackId}`);
     },
-    handleDropdownChange(coursePackId, event) {
-      const action = event.target.value;
-      if (action === 'delete') {
+    handleDropdownChange(coursePackId, command) {
+      console.log(coursePackId);
+      console.log(command);
+      if (command === 'delete') {
         this.deleteCoursePackage(coursePackId);
       }
     },
@@ -175,7 +186,7 @@ export default {
 }
 
 .left-section {
-  width: 5%;
+  width: 7%;
   background-color: #1e1e1e; /* 深黑色背景 */
   position: relative;
 }
@@ -289,6 +300,11 @@ export default {
   background-color: #45a049;
 }
 
+.edit-course-pack-button, .action-select {
+  margin-left: 10px;
+  background-color: #111827;
+}
+
 .dropdown {
   padding: 5px;
   border-radius: 5px;
@@ -305,7 +321,7 @@ export default {
 .custom-dialog {
   //background-color: #333333; /* 灰黑色背景 */
   color: white; /* 字体颜色为白色 */
-  background-color:  #333333; /* 设置背景颜色 */
+  //background-color:  #333333; /* 设置背景颜色 */
   border: 1px solid #ccc; /* 设置边框 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 设置阴影 */
 }
