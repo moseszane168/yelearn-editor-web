@@ -2,15 +2,15 @@
   <div class="container">
     <!-- 左边部分 -->
     <div class="left">
-      <img src="https://via.placeholder.com/50" alt="Left Image" class="left-image">
+      <img src="../../../assets/logo.png" alt="Left Image" class="left-image">
     </div>
 
     <!-- 中间部分 -->
     <div class="middle">
       <!-- 中间的中一 -->
       <div class="middle-top">
-        <button @click="showCoursePackageList" class="course-package-button">课程包列表 ></button>
-        <button @click="showCourseList" class="course-package-button">{{ coursePack.title }} ></button>
+        <span @click="showCoursePackageList" class="course-package-span">课程包列表 ></span>
+        <span @click="showCourseList" class="course-package-span">{{ coursePack.title }} ></span>
         <span class="course-package-title">{{ course.title }}</span>
       </div>
 
@@ -21,42 +21,101 @@
 
       <!-- 中间的中三 -->
       <div class="middle-bottom">
-        <button @click="showAddDialog" class="action-button">添加</button>
-        <button @click="showSplitDialog" class="action-button">拆分</button>
-<!--        <button @click="showProcessDialog" class="action-button">加工</button>-->
-<!--        <button @click="generateExplanation" class="action-button">生成详解</button>-->
-        <button @click="deleteItem" class="action-button">删除</button>
-<!--        <button @click="clearAll" class="action-button">清空</button>-->
-<!--        <button @click="toggleExpand" class="action-button">展开</button>-->
-<!--        <button @click="toggleCollapse" class="action-button">折叠</button>-->
-        <button @click="showEditDialog" class="action-button">编辑</button>
+        <button @click="showAddDialog" class="action-button">
+          <i class="el-icon-plus"></i> 添加
+        </button>
+        <button @click="showSplitDialog" class="action-button">
+          <i class="fas fa-cut"></i> 拆分
+        </button>
+        <!--        <button @click="" class="action-button">
+                  <i class="fas fa-rocket"></i> 加工
+                </button>-->
+        <!--        <button @click="" class="action-button">
+                  <i class="fas fa-book"></i> 生成详解
+                </button>-->
+        <button @click="showDeleteDialog" class="action-button">
+          <i class="el-icon-delete"></i> 删除
+        </button>
+        <!--        <button @click="" class="action-button">
+                  <i class="fas fa-broom"></i> 清空
+                </button>-->
+        <!--        <button @click="" class="action-button">
+                  <i class="el-icon-arrow-down"></i> 展开
+                </button>-->
+        <!--        <button @click="" class="action-button">
+                  <i class="el-icon-arrow-up"></i> 折叠
+                </button>-->
+        <button @click="showEditDialog" class="action-button">
+          <i class="el-icon-setting"></i> 编辑
+        </button>
       </div>
 
       <!-- 中间的中四 -->
+      <!--   @click="handleClick(index)"   -->
       <div class="sentence-list">
         <div v-for="(sentence, index) in sentenceList" :key="index">
-          <div class="sentence-item"  @dblclick="toggleSentence(index)">
+          <div class="sentence-item"
+               @dblclick="toggleSentence(index)">
             <span class="sentence-text">{{ sentence.english }}</span>
             <div class="sentence-actions">
-              <span class="ellipsis" @click="toggleSelect(index)">...</span>
-              <select v-if="sentence.showSelect" class="sentence-select" @change="handleSelectChange(index, $event)">
-                <option value="split">拆分</option>
-                <!--              <option value="process">加工</option>
-                              <option value="generateExplanation">生成详解</option>
-                              <option value="clear">清空</option>-->
-                <option value="delete">删除</option>
-              </select>
+              <!-- 'V' 下拉框 -->
+              <el-dropdown @command="handleSelectChange(index, $event)" class="sentence-actions-dropdown">
+                <el-button class="edit-course-button">
+                  <i class="el-icon-more"></i>
+                </el-button>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="split" class="course-dropdown">
+                    <i class="fas fa-cut"></i> 拆分
+                  </el-dropdown-item>
+                  <!--                  <el-dropdown-item command="process" class="course-dropdown">
+                                      <i class="fas fa-rocket"></i> 加工
+                                    </el-dropdown-item>-->
+                  <!--                  <el-dropdown-item command="generateExplanation" class="course-dropdown">
+                                      <i class="fas fa-book"></i> 生成详解
+                                    </el-dropdown-item>-->
+                  <!--                  <el-dropdown-item command="clear" class="course-dropdown">
+                                      <i class="fas fa-broom"></i> 清空
+                                    </el-dropdown-item>-->
+                  <el-dropdown-item command="delete" class="course-dropdown">
+                    <i class="el-icon-delete"></i> 删除
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
             </div>
           </div>
-          <div v-if="sentence.expanded" class="sentence-details">
-            <span>{{ sentence.english }}</span>
-            <span>{{ sentence.chinese }}</span>
-            <span>{{ sentence.soundmark }}</span>
-            <div class="sentence-actions">
-              <!--              <button @click="deleteSentence(index)">删除</button>-->
-              <!--              <button @click="insertAbove(index)">向上插入</button>
-                            <button @click="insertBelow(index)">向下插入</button>-->
-              <!--              <button @click="processSentence(index)">加工</button>-->
+
+          <div
+              v-for="(statement, index) in statementList[inputSentenceId]"
+              :key="index"
+              :class="{ 'sentence-split-list': sentence.expanded }">
+            <div v-if="sentence.expanded" class="sentence-split-details no-select">
+              <span>{{ statement.english }}</span>
+              <span>{{ statement.chinese }}</span>
+              <span>{{ statement.soundmark }}</span>
+              <div class="sentence-split-actions">
+                <el-dropdown @command="handleSplitSelectChange(index, $event)" class="sentence-actions-dropdown">
+                  <el-button class="edit-course-split-button">
+                    <i class="el-icon-more"></i>
+                  </el-button>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="delete" class="course-dropdown">
+                      <i class="el-icon-delete"></i> 删除
+                    </el-dropdown-item>
+                    <!--                    <el-dropdown-item command="insertUpwards" class="course-dropdown">
+                                          <i class="fas fa-long-arrow-alt-up"></i> 向上插入
+                                        </el-dropdown-item>-->
+                    <!--                    <el-dropdown-item command="insertDownwards" class="course-dropdown">
+                                          <i class="fas fa-long-arrow-alt-down"></i> 向下插入
+                                        </el-dropdown-item>-->
+                    <!--                    <el-dropdown-item command="copy" class="course-dropdown">
+                                          <i class="fas fa-copy"></i> 复制
+                                        </el-dropdown-item>-->
+                    <!--                    <el-dropdown-item command="process" class="course-dropdown">
+                                          <i class="fas fa-rocket"></i> 加工
+                                        </el-dropdown-item>-->
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </div>
             </div>
           </div>
         </div>
@@ -77,22 +136,22 @@
       </div>
 
       <!-- 右边的下 -->
-<!--      <div class="right-bottom">
-        <div class="sentence-structure">句子结构</div>
-        <div class="granularity-selector">
-          <span>选择颗粒度</span>
-          <select v-model="selectedGranularity" class="granularity-dropdown">
-            <option v-for="granularity in granularityList" :key="granularity" :value="granularity">{{ granularity }}</option>
-          </select>
-        </div>
-        <div class="sentence-display">
-          <button @click="toggleStructure" class="toggle-button">三角</button>
-          <span>{{ selectedSentence }}</span>
-          <div v-if="structureExpanded" class="sentence-structure-details">
-            &lt;!&ndash; 显示按颗粒度展开的句子结构 &ndash;&gt;
-          </div>
-        </div>
-      </div>-->
+      <!--      <div class="right-bottom">
+              <div class="sentence-structure">句子结构</div>
+              <div class="granularity-selector">
+                <span>选择颗粒度</span>
+                <select v-model="selectedGranularity" class="granularity-dropdown">
+                  <option v-for="granularity in granularityList" :key="granularity" :value="granularity">{{ granularity }}</option>
+                </select>
+              </div>
+              <div class="sentence-display">
+                <button @click="toggleStructure" class="toggle-button">三角</button>
+                <span>{{ selectedSentence }}</span>
+                <div v-if="structureExpanded" class="sentence-structure-details">
+                  &lt;!&ndash; 显示按颗粒度展开的句子结构 &ndash;&gt;
+                </div>
+              </div>
+            </div>-->
     </div>
 
     <!-- 添加对话框 -->
@@ -119,8 +178,10 @@
         :modal="false"
         width="35%" class="dialog dark-dialog">
       <el-form :model="newCourse">
-        <el-form-item label="">
+        <el-form-item label="标题">
           <el-input v-model="newCourse.title" placeholder="请输入标题" class="input-field"></el-input>
+        </el-form-item>
+        <el-form-item label="描述">
           <el-input v-model="newCourse.description" placeholder="请输入描述" class="textarea-field"></el-input>
         </el-form-item>
       </el-form>
@@ -142,6 +203,7 @@ export default {
       editTitle: '',
       editDescription: '',
       sentenceList: [],
+      statementList:[],
       inputSentenceId: '',
       inputSentenceEn: '',
       inputSentenceCh: '',
@@ -164,6 +226,7 @@ export default {
     this.getData();
     this.getOneCoursePackData();
     this.getOneCourseData();
+    this.getStatementData();
   },
   methods: {
     getOneCourseData() {
@@ -197,6 +260,29 @@ export default {
         this.loading = false;
       })
     },
+    getStatementData() {
+      //this.query.token = localStorage.getItem("token");
+      console.log(this.$route.params.coursePackId);
+      this.axios.post('/editor/statements', {
+        //params: this.query
+        courseId: this.$route.params.courseId,
+        statementId: "statement"
+      }).then((res) => {
+        console.log(res);
+        if (res.data.code === "0"){
+          this.statementList = res.data.result;
+          /*var statementList = res.data.result;
+          for (let i = 0; i< statementList.length; i++){
+            this.statementList[i] = statementList[i];
+            //this.statementList[i].expanded = false;
+            //this.statementList[i].showSelect = false;
+          }*/
+          console.log(this.statementList);
+        }
+      }).catch(() => {
+        this.loading = false;
+      })
+    },
     getData() {
       //this.query.token = localStorage.getItem("token");
       console.log(this.$route.params.coursePackId);
@@ -204,14 +290,15 @@ export default {
         //params: this.query
         courseId: this.$route.params.courseId
       }).then((res) => {
-        console.log(res);
         if (res.data.code === "0"){
           var sentenceList = res.data.result;
+          console.log(sentenceList);
           for (let i = 0; i< sentenceList.length; i++){
             this.sentenceList[i] = sentenceList[i];
             this.sentenceList[i].expanded = false;
-            this.sentenceList[i].showSelect = false;
+            //this.sentenceList[i].showSelect = false;
           }
+          console.log(this.sentenceList);
         }
       }).catch(() => {
         this.loading = false;
@@ -272,6 +359,7 @@ export default {
         if (res.data.code === "0"){
           this.getData();
           this.editDialogVisible = false;
+          this.refreshPage();
         }
       }).catch(() => {
         this.loading = false;
@@ -280,16 +368,37 @@ export default {
       // 确认编辑的逻辑
       this.editDialogVisible = false;
     },
+    /*handleClick(index) {
+      // 清除之前的定时器
+      if (this.clickTimeout) {
+        clearTimeout(this.clickTimeout);
+      }
+      // 设置新的定时器
+      this.clickTimeout = setTimeout(() => {
+        console.log('Single clicked on:', index);
+        // 在这里处理单击事件的逻辑
+      }, 200); // 200ms 的延迟，可以根据需要调整
+    },*/
     toggleSentence(index) {
+      // 清除定时器
+      /*if (this.clickTimeout) {
+        clearTimeout(this.clickTimeout);
+      }*/
+
       console.log('Toggling expand for sentence at index:', index);
       console.log(this.sentenceList[index].expanded);
-      console.log(this.sentenceList[index].showSelect);
+      //console.log(this.sentenceList[index].showSelect);
       this.sentenceList[index].expanded = !this.sentenceList[index].expanded;
-      this.sentenceList[index].showSelect = !this.sentenceList[index].showSelect;
+      //this.sentenceList[index].showSelect = !this.sentenceList[index].showSelect;
+      console.log(this.sentenceList[index]);
+      console.log(this.sentenceList);
 
       this.inputSentenceId = this.sentenceList[index].id;
       this.inputSentenceEn = this.sentenceList[index].english;
       this.inputSentenceCh = this.sentenceList[index].chinese;
+
+      console.log(this.inputSentenceId);
+      //this.getStatementData();
     },
     refreshPage() {
       window.location.reload();
@@ -333,13 +442,33 @@ export default {
     showSplitDialog(){
       this.splitSentence();
     },
+    showDeleteDialog(){
+      this.deleteSentence();
+    },
     deleteItem(){
 
     },
     toggleSelect(index) {
       this.sentenceList[index].showSelect = !this.sentenceList[index].showSelect;
     },
-    handleSelectChange(index, event) {
+    handleSelectChange(index, command) {
+      //const selectedValue = event.target.command;
+      console.log(`Selected value for sentence at index ${index}:`, command);
+      // 根据选择的值执行对应的操作
+      switch (command) {
+        case 'split':
+          this.splitSentence(index);
+          break;
+        case 'delete':
+          this.deleteSentence(index);
+          break;
+        default:
+          console.log('No action defined for this option');
+      }
+      // 隐藏 select 下拉菜单
+      this.sentenceList[index].showSelect = false;
+    },
+    handleSplitSelectChange(index, event) {
       const selectedValue = event.target.value;
       console.log(`Selected value for sentence at index ${index}:`, selectedValue);
       // 根据选择的值执行对应的操作
@@ -359,7 +488,14 @@ export default {
     splitSentence(index) {
       var courseId = this.$route.params.courseId;
       const statementIds = [];
-      statementIds.push(this.sentenceList[index].id);
+      console.log(index);
+      if (typeof index === "undefined") {
+        console.log("变量是 undefined");
+      } else {
+        console.log("变量不是 undefined");
+        statementIds.push(this.sentenceList[index].id);
+      }
+
       const splitParams = {
         courseId: courseId,
         statementIds: statementIds,
@@ -384,7 +520,13 @@ export default {
     deleteSentence(index) {
       var courseId = this.$route.params.courseId;
       const statementIds = [];
-      statementIds.push(this.sentenceList[index].id);
+      console.log(index);
+      if (typeof index === "undefined") {
+        console.log("变量是 undefined");
+      } else {
+        console.log("变量不是 undefined");
+        statementIds.push(this.sentenceList[index].id);
+      }
       const deleteParams = {
         courseId: courseId,
         statementIds: statementIds,
@@ -410,6 +552,9 @@ export default {
 </script>
 
 <style scoped>
+/* 引入 FontAwesome 样式 */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+
 .container {
   display: flex;
   height: 100vh;
@@ -432,7 +577,7 @@ export default {
 }
 
 .middle {
-  width: 60%;
+  width: 75%;
   display: flex;
   flex-direction: column;
   background-color: #222;
@@ -444,8 +589,9 @@ export default {
   margin-bottom: 20px;
 }
 
-.course-package-button {
+.course-package-span {
   margin-right: 10px;
+  color:#FFFFFF85;
 }
 
 .course-title-large {
@@ -453,20 +599,27 @@ export default {
 }
 
 .action-button {
+  border: none; /* 去除边框 */
   margin-right: 10px;
-  background-color: #00d9ff;
+  //background-color: #6366f1;
+  background-color: #4CAF50;
+  width: 66px;
+  height: 32px;
+  font-size: 12px; /* 设置字体大小为 18px */
 }
 
 .sentence-list {
   overflow-y: auto;
+  justify-content: center; /* 水平居中 */
 }
 
 .sentence-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 10px;
-  background-color: #007bff;
+  //background-color: #6366f1;
+  background-color: #4CAF50;
   padding: 10px;
 }
 
@@ -483,10 +636,56 @@ export default {
 .sentence-actions {
   display: flex;
   gap: 10px;
+  //background-color: #6366f1;
+  background-color: #4CAF50;
+}
+
+.sentence-split-list {
+  padding: 10px;
+  border-bottom: 1px solid white; /* 设置白线 */
+}
+
+.sentence-split-details {
+  display: flex;
+  flex-direction: column;
+  background-color: #1f2021;
+  position: relative;
+  height: 100%; /* 确保父容器的高度为 100% */
+  justify-content: center; /* 水平居中 */
+}
+
+.sentence-split-actions {
+  display: flex;
+  gap: 10px;
+  //background-color: #6366f1;
+  background-color: #4CAF50;
+  position: absolute;
+  top: 0px; /* 距离父容器上边的距离 */
+  right: 0px; /* 距离父容器右边的距离 */
+}
+
+.edit-course-button, .action-select {
+  margin-left: 10px;
+  background-color: #4CAF50;
+  border: none;
+}
+
+.edit-course-split-button, .action-select {
+  //margin-left: 10px;
+  background-color: #111827;
+  border: none;
+}
+
+.sentence-actions-dropdown {
+  background-color: #4CAF50;
+}
+
+.sentence-actions-button {
+  background-color: rgba(64, 158, 255, 0.5); /* 设置背景颜色为半透明 */
 }
 
 .right {
-  width: 35%;
+  width: 20%;
   display: flex;
   flex-direction: column;
   background-color: #111;
@@ -503,13 +702,16 @@ export default {
   margin-bottom: 10px;
   padding: 10px;
   border: 1px solid #555;
-  background-color: #444;
+  background-color: #111827;
   color: white;
 }
 
 .submit-button {
-  width: 10%;
-  background-color: #00d9ff;
+  border: none; /* 去除边框 */
+  width: 48px;
+  height: 32px;
+  //background-color: #6366f1;
+  background-color: #4CAF50;
 }
 
 .sentence-structure {
@@ -596,5 +798,9 @@ export default {
 .addDialogTextarea {
   width: 90%;
   height: 60%;
+}
+
+.no-select {
+  user-select: none; /* 禁止用户选择文本 */
 }
 </style>
