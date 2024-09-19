@@ -82,13 +82,14 @@
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
+            <span>{{ sentence.expanded }}</span>
           </div>
 
-          <div
-              v-for="(statement, index) in statementList[inputSentenceId]"
+          <div v-if="sentence.expanded"
+              v-for="(statement, index) in statements"
               :key="index"
               :class="{ 'sentence-split-list': sentence.expanded }">
-            <div v-if="sentence.expanded" class="sentence-split-details no-select">
+            <div class="sentence-split-details no-select">
               <span>{{ statement.english }}</span>
               <span>{{ statement.chinese }}</span>
               <span>{{ statement.soundmark }}</span>
@@ -203,7 +204,8 @@ export default {
       editTitle: '',
       editDescription: '',
       sentenceList: [],
-      statementList:[],
+      statementList: [],
+      // statements: [],
       inputSentenceId: '',
       inputSentenceEn: '',
       inputSentenceCh: '',
@@ -221,6 +223,11 @@ export default {
       splitParams: [],
       updateParams: {},
     };
+  },
+  computed: {
+    statements() {
+      return this.statementList[this.inputSentenceId]
+    }
   },
   created() {
     this.getData();
@@ -384,21 +391,32 @@ export default {
       /*if (this.clickTimeout) {
         clearTimeout(this.clickTimeout);
       }*/
-
-      console.log('Toggling expand for sentence at index:', index);
-      console.log(this.sentenceList[index].expanded);
+      const isExpand = this.sentenceList[index].expanded
+      // 双击时其他项收起
+      if (!isExpand) {
+        this.sentenceList = this.sentenceList.map(i => {
+          i.expanded = false
+          return i
+        })
+      }
+      console.log('Toggling expand for sentence at index start:', index,this.sentenceList[index].expanded);
       //console.log(this.sentenceList[index].showSelect);
-      this.sentenceList[index].expanded = !this.sentenceList[index].expanded;
+      //this.sentenceList[index].expanded = !this.sentenceList[index].expanded;
+      const item = {...this.sentenceList[index], expanded: !isExpand}
+      this.$set(this.sentenceList, index, item);
       //this.sentenceList[index].showSelect = !this.sentenceList[index].showSelect;
-      console.log(this.sentenceList[index]);
-      console.log(this.sentenceList);
+      console.log('Toggling expand for sentence at index end:', index,this.sentenceList[index].expanded);
+      console.log('sentenceList ',index,this.sentenceList[index]);
+      console.log('sentenceList: ',this.sentenceList);
 
       this.inputSentenceId = this.sentenceList[index].id;
       this.inputSentenceEn = this.sentenceList[index].english;
       this.inputSentenceCh = this.sentenceList[index].chinese;
-
-      console.log(this.inputSentenceId);
       //this.getStatementData();
+
+      //this.statements = this.statementList[this.inputSentenceId];
+
+      //console.log(this.inputSentenceId,this.statements);
     },
     refreshPage() {
       window.location.reload();
