@@ -36,9 +36,9 @@
         <button @click="showDeleteDialog" class="action-button">
           <i class="el-icon-delete"></i> 删除
         </button>
-        <!--        <button @click="" class="action-button">
+                <button @click="showClearDialog" class="action-button">
                   <i class="fas fa-broom"></i> 清空
-                </button>-->
+                </button>
         <!--        <button @click="" class="action-button">
                   <i class="el-icon-arrow-down"></i> 展开
                 </button>-->
@@ -73,28 +73,28 @@
                   <!--                  <el-dropdown-item command="generateExplanation" class="course-dropdown">
                                       <i class="fas fa-book"></i> 生成详解
                                     </el-dropdown-item>-->
-                  <!--                  <el-dropdown-item command="clear" class="course-dropdown">
+                                    <el-dropdown-item command="clear" class="course-dropdown">
                                       <i class="fas fa-broom"></i> 清空
-                                    </el-dropdown-item>-->
+                                    </el-dropdown-item>
                   <el-dropdown-item command="delete" class="course-dropdown">
                     <i class="el-icon-delete"></i> 删除
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
-            <span>{{ sentence.expanded }}</span>
+<!--            <span>{{ sentence.expanded }}</span>-->
           </div>
 
           <div v-if="sentence.expanded"
-              v-for="(statement, index) in statements"
-              :key="index"
+              v-for="(statement, statementIndex) in statements"
+              :key="statementIndex"
               :class="{ 'sentence-split-list': sentence.expanded }">
             <div class="sentence-split-details no-select">
               <span>{{ statement.english }}</span>
               <span>{{ statement.chinese }}</span>
               <span>{{ statement.soundmark }}</span>
               <div class="sentence-split-actions">
-                <el-dropdown @command="handleSplitSelectChange(index, $event)" class="sentence-actions-dropdown">
+                <el-dropdown @command="handleSplitSelectChange(index,statementIndex, $event)" class="sentence-actions-dropdown">
                   <el-button class="edit-course-split-button">
                     <i class="el-icon-more"></i>
                   </el-button>
@@ -191,6 +191,46 @@
         <el-button type="primary" @click="confirmCourseEdit" class="dialog-button confirm-button">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!--  等待数据  -->
+    <el-dialog
+        title="提示"
+        :visible.sync="loading"
+        width="30%"
+        :show-close="false"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+    >
+      <span>加载中...</span>
+    </el-dialog>
+    <!--  成功  -->
+    <el-dialog
+        title="成功"
+        :visible.sync="success"
+        width="30%"
+        :show-close="false"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+    >
+      <span>请求成功！</span>
+      <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="closeModal">确 定</el-button>
+                </span>
+    </el-dialog>
+    <!--  失败  -->
+    <el-dialog
+        title="失败"
+        :visible.sync="error"
+        width="30%"
+        :show-close="false"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+    >
+      <span>{{ errorMessage }}</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="closeModal">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -198,6 +238,10 @@
 export default {
   data() {
     return {
+      loading: false,
+      success: false,
+      error: false,
+      errorMessage: '',
       addDialogVisible: false,
       editDialogVisible: false,
       addContent: '',
@@ -234,6 +278,33 @@ export default {
     this.getOneCoursePackData();
     this.getOneCourseData();
     this.getStatementData();
+
+    // 添加请求拦截器
+    this.axios.interceptors.request.use(config => {
+      // 在发送请求之前做些什么
+      this.loading = true;
+      this.success = false;
+      this.error = false;
+      return config;
+    }, error => {
+      // 对请求错误做些什么
+      this.loading = false;
+      this.error = true;
+      return Promise.reject(error);
+    });
+
+    // 添加响应拦截器
+    this.axios.interceptors.response.use(response => {
+      // 对响应数据做点什么
+      this.loading = false;
+      this.success = true;
+      return response;
+    }, error => {
+      // 对响应错误做点什么
+      this.loading = false;
+      this.error = true;
+      return Promise.reject(error);
+    });
   },
   methods: {
     getOneCourseData() {
@@ -375,22 +446,7 @@ export default {
       // 确认编辑的逻辑
       this.editDialogVisible = false;
     },
-    /*handleClick(index) {
-      // 清除之前的定时器
-      if (this.clickTimeout) {
-        clearTimeout(this.clickTimeout);
-      }
-      // 设置新的定时器
-      this.clickTimeout = setTimeout(() => {
-        console.log('Single clicked on:', index);
-        // 在这里处理单击事件的逻辑
-      }, 200); // 200ms 的延迟，可以根据需要调整
-    },*/
     toggleSentence(index) {
-      // 清除定时器
-      /*if (this.clickTimeout) {
-        clearTimeout(this.clickTimeout);
-      }*/
       const isExpand = this.sentenceList[index].expanded
       // 双击时其他项收起
       if (!isExpand) {
@@ -461,13 +517,22 @@ export default {
       this.splitSentence();
     },
     showDeleteDialog(){
-      this.deleteSentence();
+      this.deleteSentence("","","batchDelete");
+    },
+
+    showClearDialog(){
+      this.deleteSentence("","","clear");
     },
     deleteItem(){
 
     },
     toggleSelect(index) {
       this.sentenceList[index].showSelect = !this.sentenceList[index].showSelect;
+    },
+    closeModal() {
+      this.success = false;
+      this.error = false;
+      this.errorMessage = '';
     },
     handleSelectChange(index, command) {
       //const selectedValue = event.target.command;
@@ -478,7 +543,10 @@ export default {
           this.splitSentence(index);
           break;
         case 'delete':
-          this.deleteSentence(index);
+          this.deleteSentence(index,"","singleDelete");
+          break;
+        case 'clear':
+          this.deleteSentence(index,"","clear");
           break;
         default:
           console.log('No action defined for this option');
@@ -486,16 +554,15 @@ export default {
       // 隐藏 select 下拉菜单
       this.sentenceList[index].showSelect = false;
     },
-    handleSplitSelectChange(index, event) {
-      const selectedValue = event.target.value;
-      console.log(`Selected value for sentence at index ${index}:`, selectedValue);
+    handleSplitSelectChange(index, statementIndex,command) {
+      console.log(`Selected value for sentence at index statementIndex ${index}  ${statementIndex}:`, command);
       // 根据选择的值执行对应的操作
-      switch (selectedValue) {
+      switch (command) {
         case 'split':
           this.splitSentence(index);
           break;
         case 'delete':
-          this.deleteSentence(index);
+          this.deleteSentence(index,statementIndex,"singleDelete");
           break;
         default:
           console.log('No action defined for this option');
@@ -521,48 +588,83 @@ export default {
 
       this.splitParams = { courseId: '', statementIds: []};
 
+      this.loading = true;
+      this.success = false;
+      this.error = false;
+      this.errorMessage = '';
       //this.query.token = localStorage.getItem("token");
       this.axios.post('/editor/split-statement', splitParams).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
-          this.getData();
+          this.success = true;
+          this.refreshPage();
+        }else {
+          this.error = true;
+          this.errorMessage = res.data.message;
         }
-      }).catch(err => {
-        this.$notify.error({
-          title: "错误",
-          message: err
-        });
-        console.log(err);
-      })
+      }).catch(error => {
+        console.error(error);
+        this.error = true;
+        if (error.response && error.response.data && error.response.data.message) {
+          this.errorMessage = error.response.data.message;
+        } else {
+          this.errorMessage = '请求失败，请稍后再试';
+        }
+      }).finally(
+          error => {
+            this.loading = false;
+          }
+      )
     },
-    deleteSentence(index) {
+    deleteSentence(index,statementIndex,deleteType) {
       var courseId = this.$route.params.courseId;
       const statementIds = [];
-      console.log(index);
-      if (typeof index === "undefined") {
-        console.log("变量是 undefined");
-      } else {
-        console.log("变量不是 undefined");
+      console.log(index,statementIndex);
+      console.log('sentenceList: ',this.sentenceList);
+      console.log('statementList: ',this.statementList);
+      if (typeof index !== "undefined" && statementIndex === "") {
         statementIds.push(this.sentenceList[index].id);
       }
+
+      if (typeof index !== "undefined" && statementIndex !== "") {
+        statementIds.push(this.statementList[this.sentenceList[index].id][statementIndex].id);
+      }
+
       const deleteParams = {
         courseId: courseId,
         statementIds: statementIds,
+        type: deleteType
       };
-      console.log(deleteParams);
 
-      this.deleteParams = { courseId: '', statementIds: []};
+      this.loading = true;
+      this.success = false;
+      this.error = false;
+      this.errorMessage = '';
 
       //this.query.token = localStorage.getItem("token");
       this.axios.delete('/editor/statement',{data: deleteParams}).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
-          this.getData();
+          this.success = true;
+          //this.getData();
           this.refreshPage();
+        }else {
+          this.error = true;
+          this.errorMessage = res.data.message;
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        console.error(error);
+        this.error = true;
+        if (error.response && error.response.data && error.response.data.message) {
+          this.errorMessage = error.response.data.message;
+        } else {
+          this.errorMessage = '请求失败，请稍后再试';
+        }
+      }).finally(
+          error => {
+            this.loading = false;
+          }
+      )
     }
 
   }

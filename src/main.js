@@ -15,7 +15,7 @@ import zhLocale from 'element-ui/lib/locale/lang/zh-CN'
 
 
 // 单独引入样式文件
-//import 'element-ui/lib/theme-chalk/index.css';
+import 'element-ui/lib/theme-chalk/index.css';
 // 加载拖拽组件
 //import './utils/directives'
 // import env from './env'
@@ -87,7 +87,7 @@ Vue.config.productionTip = false
 // 测试环境
 //axios.defaults.basePicURL = 'http://192.168.3.206:81/';
 
-axios.defaults.timeout = 10000;
+axios.defaults.timeout = 1000000;
 // 本地环境
 axios.defaults.basePicURL = 'http://127.0.0.1:8081/';
 
