@@ -197,11 +197,11 @@
         :visible.sync="dialogVisible"
         :title="dialogTitle"
         :close-on-click-modal="false"
-        :class="dialogClass">
+        :custom-class="dialogClass">
       <span>{{ dialogMessage }}</span>
     </el-dialog>
 
-    <el-loading v-if="loading" :text="loadingText" fullscreen />
+<!--    <el-loading v-if="loading" :text="loadingText" fullscreen />-->
   </div>
 </template>
 
@@ -209,12 +209,13 @@
 export default {
   data() {
     return {
+      loadingInstance: null,
       dialogVisible: false,
       dialogTitle: '',
       dialogMessage: '',
       dialogClass: '',
-      loading: false,
-      loadingText: '拆分句子时间表较长，请耐心等待...',
+      //loading: false,
+      //loadingText: '拆分句子时间表较长，请耐心等待...',
       success: false,
       error: false,
       errorMessage: '',
@@ -264,8 +265,9 @@ export default {
     showDialog(title, message, type, duration) {
       this.dialogTitle = title;
       this.dialogMessage = message;
-      this.dialogClass = type;
+      this.dialogClass = type + '-dialog';
       this.dialogVisible = true;
+      console.log('dialogClass: ',this.dialogClass);
 
       setTimeout(() => {
         this.dialogVisible = false;
@@ -286,7 +288,7 @@ export default {
           this.newCourse = res.data.result;
         }
       }).catch(() => {
-        this.loading = false;
+        //this.loading = false;
       })
     },
 
@@ -303,7 +305,7 @@ export default {
           this.coursePack = res.data.result
         }
       }).catch(() => {
-        this.loading = false;
+        //this.loading = false;
       })
     },
 
@@ -323,7 +325,7 @@ export default {
           console.log('getStatementData: ',this.statementList);
         }
       }).catch(() => {
-        this.loading = false;
+        //this.loading = false;
       })
     },
 
@@ -344,7 +346,7 @@ export default {
           console.log('statements getData',this.sentenceList);
         }
       }).catch(() => {
-        this.loading = false;
+        //this.loading = false;
       })
     },
 
@@ -385,13 +387,26 @@ export default {
       this.axios.post('/editor/statement', sentence).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '添加成功', type: 'success'});
           this.getData();
           this.addDialogVisible = false;
           this.refreshPage();
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
 
       // 确认添加的逻辑
       this.addDialogVisible = false;
@@ -412,13 +427,29 @@ export default {
       this.axios.put('/editor/course', newCourse).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({
+            message: '编辑成功',
+            type: 'success'
+          });
           this.getData();
           this.editDialogVisible = false;
           this.refreshPage();
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
 
       // 确认编辑的逻辑
       this.editDialogVisible = false;
@@ -477,16 +508,28 @@ export default {
       this.axios.put('/editor/statement', this.updateParams).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({
+            message: '修改成功',
+            type: 'success'
+          });
           this.getData();
           this.refreshPage();
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(err => {
-        this.$notify.error({
-          title: "错误",
-          message: err
-        });
-        console.log(err);
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
     },
 
     // toto todo 批量拆分
@@ -568,29 +611,37 @@ export default {
       this.splitParams = { courseId: '', statementIds: []};
 
       //this.showDialog('提示', '拆分时间比较长，请耐心等待...', 'success',1000000);
-      this.loading = true;
+      //this.loading = true;
+      // 显示加载动画
+      this.loadingInstance = this.$loading({
+        lock: true,
+        text: '拆分时间比较长，请耐心等待...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)',
+        customClass: 'loading-text-scroll', // 自定义类名
+      });
 
       //this.query.token = localStorage.getItem("token");
       this.axios.post('/editor/split-statement', splitParams).then((res) => {
-        console.log(res);
-        this.loading = false;
+        // 关闭加载动画
+        this.loadingInstance.close();
         if (res.data.code === "0"){
-          this.showDialog('成功', '拆分成功', 'success',5000);
+          this.$message({message: '拆分成功', type: 'success'});
           this.refreshPage();
         }else {
-          this.showDialog('失败', res.data.message, 'error',5000);
+          this.$message(res.data.message);
         }
       }).catch(error => {
-        console.error(error);
-        this.loading = false;
+        // 关闭加载动画
+        this.loadingInstance.close();
         if (error.response && error.response.data && error.response.data.message) {
-          this.showDialog('失败', error.response.data.message, 'exception',5000);
+          this.$message.error(error.response.data.message);
         } else {
-          this.showDialog('失败', '请求失败，请稍后再试', 'exception',5000);
+          this.$message.error('请求失败，请稍后再试');
         }
       }).finally(
           error => {
-            this.loading = false;
+            //this.loading = false;
           }
       )
     },
@@ -625,24 +676,28 @@ export default {
       this.axios.delete('/editor/statement',{data: deleteParams}).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
-          this.showDialog('成功', '删除成功', 'success',5000);
+          if (deleteType === 'clear'){
+            this.$message({message: '清空成功', type: 'success'});
+          }else {
+            this.$message({message: '删除成功', type: 'success'});
+          }
           this.getData();
           this.getStatementData();
           //this.refreshPage();
         }else {
-          this.showDialog('失败', res.data.message, 'error',5000);
+          this.$message(res.data.message);
         }
       }).catch(error => {
-        console.error(error);
-        this.loading = false;
+        // 关闭加载动画
+        this.loadingInstance.close();
         if (error.response && error.response.data && error.response.data.message) {
-          this.showDialog('失败', error.response.data.message, 'exception',5000);
+          this.$message.error(error.response.data.message);
         } else {
-          this.showDialog('失败', '请求失败，请稍后再试', 'exception',5000);
+          this.$message.error('请求失败，请稍后再试');
         }
       }).finally(
           error => {
-
+            //this.loading = false;
           }
       )
     }
@@ -904,7 +959,7 @@ export default {
   user-select: none; /* 禁止用户选择文本 */
 }
 
-.success {
+.success-dialog {
   //background-color: #d4edda;
   border-color: #c3e6cb;
   color: #155724;
@@ -912,19 +967,54 @@ export default {
   height: 10px;
 }
 
-.error {
+.error-dialog {
   //background-color: #f8d7da;
   border-color: #f5c6cb;
   color: #721c24;
-  width: 30px;
-  height: 10px;
+  min-width: 300px; /* 最小宽度 */
+  max-width: 800px; /* 最大宽度 */
+  height: 400px; /* 固定高度 */
 }
 
-.exception {
+.exception-dialog {
   //background-color: #fff3cd;
   border-color: #ffeeba;
   color: #856404;
   width: 30px;
   height: 10px;
+}
+
+/* 自定义对话框内容区域的高度 */
+.error-dialog .el-dialog__body {
+  height: calc(100% - 100px); /* 减去标题和底部按钮的高度 */
+  overflow-y: auto; /* 内容超出时显示滚动条 */
+}
+
+/* 自定义加载动画的样式 */
+.loading-text-scroll .el-loading-text {
+  white-space: nowrap; /* 防止文字换行 */
+  overflow: hidden; /* 隐藏溢出的文字 */
+  position: relative; /* 设置相对定位 */
+  height: 20px; /* 设置高度以便容纳多行文字 */
+}
+
+/* 文字滚动动画 */
+@keyframes textScroll {
+  0% {
+    transform: translateX(100%); /* 初始位置在右侧 */
+  }
+  100% {
+    transform: translateX(-100%); /* 最终位置在左侧 */
+  }
+}
+
+/* 应用动画 */
+.loading-text-scroll .el-loading-text::after {
+  content: '加载中... 正在加载数据... 请稍候...'; /* 多段文字内容 */
+  position: absolute; /* 设置绝对定位 */
+  top: 0;
+  left: 100%; /* 初始位置在右侧 */
+  animation: textScroll 10s linear infinite; /* 应用动画 */
+  white-space: nowrap; /* 防止文字换行 */
 }
 </style>
