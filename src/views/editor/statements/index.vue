@@ -192,45 +192,16 @@
       </span>
     </el-dialog>
 
-    <!--  等待数据  -->
+    <!-- 成功、失败、异常弹窗   -->
     <el-dialog
-        title="提示"
-        :visible.sync="loading"
-        width="30%"
-        :show-close="false"
+        :visible.sync="dialogVisible"
+        :title="dialogTitle"
         :close-on-click-modal="false"
-        :close-on-press-escape="false"
-    >
-      <span>加载中...</span>
+        :class="dialogClass">
+      <span>{{ dialogMessage }}</span>
     </el-dialog>
-    <!--  成功  -->
-    <el-dialog
-        title="成功"
-        :visible.sync="success"
-        width="30%"
-        :show-close="false"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false"
-    >
-      <span>请求成功！</span>
-      <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" @click="closeModal">确 定</el-button>
-                </span>
-    </el-dialog>
-    <!--  失败  -->
-    <el-dialog
-        title="失败"
-        :visible.sync="error"
-        width="30%"
-        :show-close="false"
-        :close-on-click-modal="false"
-        :close-on-press-escape="false"
-    >
-      <span>{{ errorMessage }}</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="closeModal">确 定</el-button>
-      </span>
-    </el-dialog>
+
+    <el-loading v-if="loading" :text="loadingText" fullscreen />
   </div>
 </template>
 
@@ -238,7 +209,12 @@
 export default {
   data() {
     return {
+      dialogVisible: false,
+      dialogTitle: '',
+      dialogMessage: '',
+      dialogClass: '',
       loading: false,
+      loadingText: '拆分句子时间表较长，请耐心等待...',
       success: false,
       error: false,
       errorMessage: '',
@@ -268,45 +244,35 @@ export default {
       updateParams: {},
     };
   },
+
   computed: {
     statements() {
+      console.log('computed: ',this.inputSentenceId);
       return this.statementList[this.inputSentenceId]
     }
   },
+
   created() {
     this.getData();
     this.getOneCoursePackData();
     this.getOneCourseData();
     this.getStatementData();
-
-    // 添加请求拦截器
-    this.axios.interceptors.request.use(config => {
-      // 在发送请求之前做些什么
-      this.loading = true;
-      this.success = false;
-      this.error = false;
-      return config;
-    }, error => {
-      // 对请求错误做些什么
-      this.loading = false;
-      this.error = true;
-      return Promise.reject(error);
-    });
-
-    // 添加响应拦截器
-    this.axios.interceptors.response.use(response => {
-      // 对响应数据做点什么
-      this.loading = false;
-      this.success = true;
-      return response;
-    }, error => {
-      // 对响应错误做点什么
-      this.loading = false;
-      this.error = true;
-      return Promise.reject(error);
-    });
   },
+
   methods: {
+    // todo 弹窗
+    showDialog(title, message, type, duration) {
+      this.dialogTitle = title;
+      this.dialogMessage = message;
+      this.dialogClass = type;
+      this.dialogVisible = true;
+
+      setTimeout(() => {
+        this.dialogVisible = false;
+      }, duration);
+    },
+
+    // todo 获取课程详情
     getOneCourseData() {
       //this.query.token = localStorage.getItem("token");
       console.log(this.$route.params.courseId);
@@ -323,6 +289,8 @@ export default {
         this.loading = false;
       })
     },
+
+    // todo 获取课程包详情
     getOneCoursePackData() {
       //this.query.token = localStorage.getItem("token");
       console.log(this.$route.params.coursePackId);
@@ -338,6 +306,8 @@ export default {
         this.loading = false;
       })
     },
+
+    // todo 获取子句列表
     getStatementData() {
       //this.query.token = localStorage.getItem("token");
       console.log(this.$route.params.coursePackId);
@@ -349,18 +319,15 @@ export default {
         console.log(res);
         if (res.data.code === "0"){
           this.statementList = res.data.result;
-          /*var statementList = res.data.result;
-          for (let i = 0; i< statementList.length; i++){
-            this.statementList[i] = statementList[i];
-            //this.statementList[i].expanded = false;
-            //this.statementList[i].showSelect = false;
-          }*/
-          console.log(this.statementList);
+
+          console.log('getStatementData: ',this.statementList);
         }
       }).catch(() => {
         this.loading = false;
       })
     },
+
+    // todo 获取句子列表
     getData() {
       //this.query.token = localStorage.getItem("token");
       console.log(this.$route.params.coursePackId);
@@ -369,33 +336,41 @@ export default {
         courseId: this.$route.params.courseId
       }).then((res) => {
         if (res.data.code === "0"){
-          var sentenceList = res.data.result;
-          console.log(sentenceList);
-          for (let i = 0; i< sentenceList.length; i++){
-            this.sentenceList[i] = sentenceList[i];
-            this.sentenceList[i].expanded = false;
-            //this.sentenceList[i].showSelect = false;
+          this.sentenceList = res.data.result;
+
+          for (let i = 0; i< this.sentenceList.length; i++){
+            this.$set(this.sentenceList[i], 'expanded',false);
           }
-          console.log(this.sentenceList);
+          console.log('statements getData',this.sentenceList);
         }
       }).catch(() => {
         this.loading = false;
       })
     },
+
+    // todo 跳转到课程包页面
     showCoursePackageList() {
       // 显示课程包列表的逻辑
       this.$router.push(`/course-packs`);
     },
+
+    // todo 跳转到课程页面
     showCourseList(){
       var coursePackId = this.$route.params.coursePackId;
       this.$router.push(`/course-packs/${coursePackId}`);
     },
+
+    // todo 弹出添加句子弹窗
     showAddDialog() {
       this.addDialogVisible = true;
     },
+
+    // todo 弹出编辑课程弹窗
     showEditDialog() {
       this.editDialogVisible = true;
     },
+
+    // todo 添加句子
     confirmAdd() {
       var courseId = this.$route.params.courseId;
       const sentence = {
@@ -421,6 +396,8 @@ export default {
       // 确认添加的逻辑
       this.addDialogVisible = false;
     },
+
+    // todo 编辑课程
     confirmCourseEdit() {
       var courseId = this.$route.params.courseId;
       const newCourse = {
@@ -446,6 +423,8 @@ export default {
       // 确认编辑的逻辑
       this.editDialogVisible = false;
     },
+
+    // todo 双击句子
     toggleSentence(index) {
       const isExpand = this.sentenceList[index].expanded
       // 双击时其他项收起
@@ -455,12 +434,12 @@ export default {
           return i
         })
       }
+
       console.log('Toggling expand for sentence at index start:', index,this.sentenceList[index].expanded);
-      //console.log(this.sentenceList[index].showSelect);
-      //this.sentenceList[index].expanded = !this.sentenceList[index].expanded;
+
       const item = {...this.sentenceList[index], expanded: !isExpand}
       this.$set(this.sentenceList, index, item);
-      //this.sentenceList[index].showSelect = !this.sentenceList[index].showSelect;
+
       console.log('Toggling expand for sentence at index end:', index,this.sentenceList[index].expanded);
       console.log('sentenceList ',index,this.sentenceList[index]);
       console.log('sentenceList: ',this.sentenceList);
@@ -468,15 +447,14 @@ export default {
       this.inputSentenceId = this.sentenceList[index].id;
       this.inputSentenceEn = this.sentenceList[index].english;
       this.inputSentenceCh = this.sentenceList[index].chinese;
-      //this.getStatementData();
-
-      //this.statements = this.statementList[this.inputSentenceId];
-
-      //console.log(this.inputSentenceId,this.statements);
     },
+
+    // todo 刷新页面
     refreshPage() {
       window.location.reload();
     },
+
+    // todo 修改句子
     submitSentence(type) {
       // 提交句子的逻辑
       if (type === 'en'){
@@ -510,30 +488,30 @@ export default {
         console.log(err);
       })
     },
-    toggleStructure() {
-      this.structureExpanded = !this.structureExpanded;
-    },
+
+    // toto todo 批量拆分
     showSplitDialog(){
       this.splitSentence();
     },
+
+    // todo 批量删除
     showDeleteDialog(){
       this.deleteSentence("","","batchDelete");
     },
 
+    // todo 批量清空
     showClearDialog(){
       this.deleteSentence("","","clear");
     },
-    deleteItem(){
 
-    },
-    toggleSelect(index) {
-      this.sentenceList[index].showSelect = !this.sentenceList[index].showSelect;
-    },
+    // todo 关闭提示弹窗
     closeModal() {
       this.success = false;
       this.error = false;
       this.errorMessage = '';
     },
+
+    // todo 句子'V' 下拉框操作
     handleSelectChange(index, command) {
       //const selectedValue = event.target.command;
       console.log(`Selected value for sentence at index ${index}:`, command);
@@ -554,6 +532,8 @@ export default {
       // 隐藏 select 下拉菜单
       this.sentenceList[index].showSelect = false;
     },
+
+    // todo 子句'V' 下拉框操作
     handleSplitSelectChange(index, statementIndex,command) {
       console.log(`Selected value for sentence at index statementIndex ${index}  ${statementIndex}:`, command);
       // 根据选择的值执行对应的操作
@@ -570,14 +550,13 @@ export default {
       // 隐藏 select 下拉菜单
       this.sentenceList[index].showSelect = false;
     },
+
+    // todo 拆分句子
     splitSentence(index) {
       var courseId = this.$route.params.courseId;
       const statementIds = [];
       console.log(index);
-      if (typeof index === "undefined") {
-        console.log("变量是 undefined");
-      } else {
-        console.log("变量不是 undefined");
+      if (typeof index !== "undefined") {
         statementIds.push(this.sentenceList[index].id);
       }
 
@@ -588,27 +567,26 @@ export default {
 
       this.splitParams = { courseId: '', statementIds: []};
 
+      //this.showDialog('提示', '拆分时间比较长，请耐心等待...', 'success',1000000);
       this.loading = true;
-      this.success = false;
-      this.error = false;
-      this.errorMessage = '';
+
       //this.query.token = localStorage.getItem("token");
       this.axios.post('/editor/split-statement', splitParams).then((res) => {
         console.log(res);
+        this.loading = false;
         if (res.data.code === "0"){
-          this.success = true;
+          this.showDialog('成功', '拆分成功', 'success',5000);
           this.refreshPage();
         }else {
-          this.error = true;
-          this.errorMessage = res.data.message;
+          this.showDialog('失败', res.data.message, 'error',5000);
         }
       }).catch(error => {
         console.error(error);
-        this.error = true;
+        this.loading = false;
         if (error.response && error.response.data && error.response.data.message) {
-          this.errorMessage = error.response.data.message;
+          this.showDialog('失败', error.response.data.message, 'exception',5000);
         } else {
-          this.errorMessage = '请求失败，请稍后再试';
+          this.showDialog('失败', '请求失败，请稍后再试', 'exception',5000);
         }
       }).finally(
           error => {
@@ -616,53 +594,55 @@ export default {
           }
       )
     },
+
+    // todo 删除句子
     deleteSentence(index,statementIndex,deleteType) {
       var courseId = this.$route.params.courseId;
       const statementIds = [];
       console.log(index,statementIndex);
       console.log('sentenceList: ',this.sentenceList);
       console.log('statementList: ',this.statementList);
-      if (typeof index !== "undefined" && statementIndex === "") {
+      var sentenceType = 'all';
+      if (index !== "" && statementIndex === "") {
         statementIds.push(this.sentenceList[index].id);
+        sentenceType = 'sentence';
       }
 
-      if (typeof index !== "undefined" && statementIndex !== "") {
+      // 删除子句
+      if (index !== "" && statementIndex !== "") {
         statementIds.push(this.statementList[this.sentenceList[index].id][statementIndex].id);
+        sentenceType = 'statement';
       }
 
       const deleteParams = {
         courseId: courseId,
         statementIds: statementIds,
-        type: deleteType
+        type: deleteType,
+        sentenceType: sentenceType,
       };
-
-      this.loading = true;
-      this.success = false;
-      this.error = false;
-      this.errorMessage = '';
 
       //this.query.token = localStorage.getItem("token");
       this.axios.delete('/editor/statement',{data: deleteParams}).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
-          this.success = true;
-          //this.getData();
-          this.refreshPage();
+          this.showDialog('成功', '删除成功', 'success',5000);
+          this.getData();
+          this.getStatementData();
+          //this.refreshPage();
         }else {
-          this.error = true;
-          this.errorMessage = res.data.message;
+          this.showDialog('失败', res.data.message, 'error',5000);
         }
       }).catch(error => {
         console.error(error);
-        this.error = true;
+        this.loading = false;
         if (error.response && error.response.data && error.response.data.message) {
-          this.errorMessage = error.response.data.message;
+          this.showDialog('失败', error.response.data.message, 'exception',5000);
         } else {
-          this.errorMessage = '请求失败，请稍后再试';
+          this.showDialog('失败', '请求失败，请稍后再试', 'exception',5000);
         }
       }).finally(
           error => {
-            this.loading = false;
+
           }
       )
     }
@@ -922,5 +902,29 @@ export default {
 
 .no-select {
   user-select: none; /* 禁止用户选择文本 */
+}
+
+.success {
+  //background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+  width: 30px;
+  height: 10px;
+}
+
+.error {
+  //background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+  width: 30px;
+  height: 10px;
+}
+
+.exception {
+  //background-color: #fff3cd;
+  border-color: #ffeeba;
+  color: #856404;
+  width: 30px;
+  height: 10px;
 }
 </style>
