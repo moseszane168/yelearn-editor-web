@@ -149,12 +149,25 @@ export default {
         }}).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '上传成功', type: 'success'});
           this.newCoursePackage.cover = res.data.result.filePath;
           console.log(this.newCoursePackage.cover);
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
     },
     updateCoursePackage() {
       var coursePackId = this.$route.params.coursePackId;
@@ -173,13 +186,26 @@ export default {
       this.axios.put('/editor/course-pack', newCoursePack).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '更新成功', type: 'success'});
           this.getData();
           this.getOneCoursePackData();
           this.showDialog = false;
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
     },
     getData() {
       //this.query.token = localStorage.getItem("token");
@@ -193,9 +219,19 @@ export default {
         if (res.data.code === "0"){
           this.courseList = res.data.result
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
     },
     getOneCoursePackData() {
       //this.query.token = localStorage.getItem("token");
@@ -209,9 +245,19 @@ export default {
           this.coursePack = res.data.result;
           this.newCoursePackage = res.data.result;
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
     },
     showCoursePackageList() {
       // 显示课程包列表的逻辑
@@ -244,11 +290,24 @@ export default {
       this.axios.delete('/editor/course'+'?id='+courseId, {}).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '删除成功', type: 'success'});
           this.getData();
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
 
       this.courseList = this.courseList.filter(c => c !== course);
     },
@@ -271,12 +330,25 @@ export default {
       this.axios.post('/editor/course', newCourse).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '创建成功', type: 'success'});
           this.getData();
           this.createCourseDialogVisible = false;
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
 
       // 确认创建课程的逻辑
       this.createCourseDialogVisible = false;

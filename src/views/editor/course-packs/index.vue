@@ -127,11 +127,24 @@ export default {
       this.axios.delete('/editor/course-pack'+'?id='+coursePackId, {}).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '删除成功', type: 'success'});
           this.getData();
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
 
       this.coursePackages = this.coursePackages.filter(course => course.id !== courseId);
     },
@@ -144,12 +157,25 @@ export default {
       }}).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '上传成功', type: 'success'});
           this.newCoursePackage.cover = res.data.result.filePath;
           console.log(this.newCoursePackage.cover);
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
     },
     createCoursePackage() {
       const newCourse = {
@@ -166,12 +192,25 @@ export default {
       this.axios.post('/editor/course-pack', newCourse).then((res) => {
         console.log(res);
         if (res.data.code === "0"){
+          this.$message({message: '删除成功', type: 'success'});
           this.getData();
           this.showDialog = false;
+        }else {
+          this.$message(res.data.message);
         }
-      }).catch(() => {
-        this.loading = false;
-      })
+      }).catch(error => {
+        // 关闭加载动画
+        this.loadingInstance.close();
+        if (error.response && error.response.data && error.response.data.message) {
+          this.$message.error(error.response.data.message);
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }).finally(
+          error => {
+            //this.loading = false;
+          }
+      )
     }
   }
 }
