@@ -390,7 +390,7 @@ export default {
           this.$message({message: '添加成功', type: 'success'});
           this.getData();
           this.addDialogVisible = false;
-          this.refreshPage();
+          //this.refreshPage();
         }else {
           this.$message(res.data.message);
         }
@@ -432,8 +432,9 @@ export default {
             type: 'success'
           });
           this.getData();
+          this.getOneCourseData();
           this.editDialogVisible = false;
-          this.refreshPage();
+          //this.refreshPage();
         }else {
           this.$message(res.data.message);
         }
@@ -513,7 +514,7 @@ export default {
             type: 'success'
           });
           this.getData();
-          this.refreshPage();
+          //this.refreshPage();
         }else {
           this.$message(res.data.message);
         }
@@ -627,7 +628,8 @@ export default {
         this.loadingInstance.close();
         if (res.data.code === "0"){
           this.$message({message: '拆分成功', type: 'success'});
-          this.refreshPage();
+          this.getStatementData();
+          //this.refreshPage();
         }else {
           this.$message(res.data.message);
         }
@@ -952,7 +954,7 @@ export default {
 
 .addDialogTextarea {
   width: 90%;
-  height: 60%;
+  height: 100%;
 }
 
 .no-select {
