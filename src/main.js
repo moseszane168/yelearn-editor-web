@@ -27,6 +27,7 @@ Vue.use(ElementUI, {
 });
 
 import { Pagination, Table,Select } from 'element-ui';
+import env from "@/env";
 Vue.use(Pagination);
 Vue.use(Table)
 Vue.use(Select)
@@ -81,20 +82,11 @@ Vue.config.productionTip = false
 
 // import myFilter from './utils/filter.js';
 // Vue.use(myFilter);
-// 正式环境
-//axios.defaults.basePicURL = 'http://192.168.3.207:8086/';
-// axios.defaults.basePicURL = 'http://192.168.3.207:8086/';
-// 测试环境
-//axios.defaults.basePicURL = 'http://192.168.3.206:81/';
 
 axios.defaults.timeout = 1000000;
-// 本地环境
-axios.defaults.basePicURL = 'http://127.0.0.1:8081/';
-
-axios.defaults.baseURL = axios.defaults.basePicURL + 'v1';
 
 // 根据环境变量获取不同的请求地址
-// axios.defaults.baseURL = env.baseURL;
+ axios.defaults.baseURL = env.baseURL;
 
 // 接口错误拦截
 /*axios.interceptors.response.use(

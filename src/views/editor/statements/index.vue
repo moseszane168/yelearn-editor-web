@@ -249,7 +249,12 @@ export default {
   computed: {
     statements() {
       console.log('computed: ',this.inputSentenceId);
-      return this.statementList[this.inputSentenceId]
+      if (this.inputSentenceId !== ""){
+        return this.statementList[this.inputSentenceId];
+      }else {
+        return [];
+      }
+
     }
   },
 
