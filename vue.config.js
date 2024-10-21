@@ -13,7 +13,7 @@ module.exports = {
     // host:'localhost',
     port:8080,
     // port:8081,
-    proxy: {
+    /*proxy: {
       '/api': {
         target: process.env.VUE_APP_BASE_API,
         changeOrigin: true,
@@ -21,7 +21,7 @@ module.exports = {
           '/api': ''
         }
       }
-    },
+    },*/
     // productionSourceMap: true,
     // chainWebpack: (config) => {
     //   config.plugins.delete('prefetch');
